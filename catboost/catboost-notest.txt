@@ -1,0 +1,6 @@
+catboost notes
+
+https://towardsdatascience.com/catboost-regression-in-6-minutes-3487f3e5b329
+
+xgboost is not able to handle categorial variables.
+catboost can handle categorial variable and at the same time its fast in execution.
