@@ -1,0 +1,17 @@
+Data set size - 204 rows
+Columns on dataset - 26
+
+Feature post one hot encoding - 67
+
+'num_of_cylinders', 'bore', 'stroke', 'horsepower', 'peak_rpm', 'symboling', 'normalized_losses', 'wheel_base', 'length', 'width', 'height', 'curb_weight', 'engine_size', 'compression_ratio', 'city_mpg', 'highway_mpg'
+'onehotencoder__x0_alfa-romero', 'onehotencoder__x0_audi', 'onehotencoder__x0_bmw', 'onehotencoder__x0_chevrolet', 'onehotencoder__x0_dodge', 'onehotencoder__x0_honda', 'onehotencoder__x0_isuzu', 'onehotencoder__x0_jaguar', 'onehotencoder__x0_mazda', 'onehotencoder__x0_mercedes-benz', 'onehotencoder__x0_mercury', 'onehotencoder__x0_mitsubishi', 'onehotencoder__x0_nissan', 'onehotencoder__x0_peugot', 'onehotencoder__x0_plymouth', 'onehotencoder__x0_porsche', 'onehotencoder__x0_renault', 'onehotencoder__x0_saab', 'onehotencoder__x0_subaru', 'onehotencoder__x0_toyota', 'onehotencoder__x0_volkswagen', 'onehotencoder__x0_volvo', 'onehotencoder__x1_diesel', 'onehotencoder__x1_gas', 'onehotencoder__x2_std', 'onehotencoder__x2_turbo', 'onehotencoder__x3_four', 'onehotencoder__x3_two', 'onehotencoder__x4_convertible', 'onehotencoder__x4_hardtop', 'onehotencoder__x4_hatchback', 'onehotencoder__x4_sedan', 'onehotencoder__x4_wagon', 'onehotencoder__x5_4wd', 'onehotencoder__x5_fwd', 'onehotencoder__x5_rwd', 'onehotencoder__x6_front', 'onehotencoder__x6_rear', 'onehotencoder__x7_dohc', 'onehotencoder__x7_dohcv', 'onehotencoder__x7_l', 'onehotencoder__x7_ohc', 'onehotencoder__x7_ohcf', 'onehotencoder__x7_ohcv', 'onehotencoder__x7_rotor', 'onehotencoder__x8_1bbl', 'onehotencoder__x8_2bbl', 'onehotencoder__x8_4bbl', 'onehotencoder__x8_idi', 'onehotencoder__x8_mfi', 'onehotencoder__x8_mpfi', 'onehotencoder__x8_spdi', 'onehotencoder__x8_spfi'
+
+
+Models Implemented -
+
+LinearRegression
+RandomForestRegressor
+Shapley Values 	- https://www.analyticsvidhya.com/blog/2019/11/shapley-value-machine-learning-interpretability-game-theory/
+LIME 			- https://www.analyticsvidhya.com/blog/2017/06/building-trust-in-machine-learning-models/?utm_source=blog&utm_medium=shapley-value-machine-learning-interpretability-game-theory
+DecisionTreeRegressor
+
