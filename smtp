@@ -1,0 +1,12 @@
+import smtplib
+
+# please note to setup password on gmail 
+# manage-google-account --> security --> 2-step-verification on --> App Password
+my_email ='viewsamol@gmail.com'
+password ='iprnrvympnnatdqg'
+to_address = 'amolm.2007@gmail.com'
+
+with smtplib.SMTP('smtp.gmail.com') as connection:
+  connection.starttls()
+  connection.login(user = my_email , password = password )
+  connection.sendmail(my_email, to_address , msg ='Hi there !!', )
