@@ -13,6 +13,11 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 from sklearn.impute import SimpleImputer
+import matplotlib.pyplot as plt
+from sklearn import preprocessing
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import OneHotEncoder
 
 df_org = pd.read_csv("hr_modified_1.csv")
 df = df_org
@@ -34,21 +39,140 @@ df[df.isna().any(axis=1)]
 # MonthlyIncome   -numeric  - 1      
 # MonthlyRate     -numeric  - 1
 
-sns.histplot(data = df_medical_travel_rarely['DailyRate'], kde = True)
-
 # identifying BusinessTravel=='Travel_Rarely' and df.EducationField =='Medical' dataset
 df_medical_travel_rarely = df[(df.BusinessTravel=='Travel_Rarely') & (df.EducationField =='Medical') ]
 # replacing DailyRate with mean for dataset where BusinessTravel=='Travel_Rarely' and df.EducationField =='Medical'
 df_daily_date = df_medical_travel_rarely['DailyRate']
 df_df_daily_date = pd.DataFrame(df_daily_date)
 df_df_daily_date['DailyRate'] = pd.to_numeric(df_df_daily_date['DailyRate'],errors = 'coerce')
-df['DailyRate'] = df['DailyRate'].fillna(df_df_daily_date.mean())
+
+# df_df_daily_date.mean()
+df['DailyRate'] = df['DailyRate'].fillna(836.299694)
 
 # df[df.isna().any(axis=1)]
 #identifying Department for row 162 , Research And Development looks to be most occuring one
 df_medical_travel_rarely.Department.value_counts(dropna=False)
 
+df[df.isna().any(axis=1)]
+
 # df[df.isna().any(axis=1)]
 df['Department'] = df['Department'].fillna('RAD')
 
+df.at[798, 'BusinessTravel'] ='Travel_Rarely'
+
+df.at[516, 'BusinessTravel'] ='Travel_Rarely'
+
+# checked for average of Attrition = Yes and Gender = Male and JobRole = Laboratory_Technician and MaritalStatus = Single
+df.at[798, 'MonthlyIncome'] = 2978
+
+# checked for average of Attrition = No and Gender = Female and JobRole = Research_Scientist and MaritalStatus = Married
+df.at[516, 'MonthlyRate'] = 15533
+
+df
+df.at[1273, 'EducationField'] = 'LS'
+
 df[df.isna().any(axis=1)]
+# df_no_missing_values = df
+
+df.info()
+
+# columns listed below do not add any value on model.
+col = ['Attrition','EmployeeNumber','Over18']
+X = df
+for c in col:
+  X = X.loc[:, X.columns != c]
+y = df.Attrition
+
+X['DailyRate'] = df['DailyRate'].astype(float)
+X['MonthlyIncome'] = df['MonthlyIncome'].astype(float)
+X['MonthlyRate'] = df['MonthlyRate'].astype(float)
+
+from sklearn.model_selection import train_test_split
+X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=.25)
+
+X_train.info()
+
+cat_cols=X.select_dtypes(include="object").columns
+
+num_cols= X.select_dtypes(exclude="object").columns
+
+num_cols
+
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.linear_model import LogisticRegression
+from sklearn.compose import ColumnTransformer
+
+# Cat Tranformer 
+categorical_tranformer= Pipeline(steps=[('ohe',OneHotEncoder())])
+
+# Num tranfoemr
+numerical_tranformer = Pipeline(steps=[('sc',StandardScaler())])
+
+col_tranform= ColumnTransformer(transformers=[                                     
+                                      ('cat_feat',categorical_tranformer,cat_cols),\
+                                     ('num_feat',numerical_tranformer,num_cols),\
+                                        ],
+                                     remainder='passthrough')
+
+my_pipeline= Pipeline(steps=[('first_pipe',col_tranform),('model',LogisticRegression())])
+
+my_pipeline.fit(X_train,y_train)
+
+y_pred= my_pipeline.predict(X_test)
+
+X_train.head()
+
+from sklearn.metrics import accuracy_score
+pd.Series(accuracy_score(y_test,y_pred))
+
+from sklearn import metrics
+metrics.confusion_matrix(y_test,y_pred)
+
+from sklearn.ensemble import RandomForestClassifier
+my_pipeline= Pipeline(steps=[('first_pipe',col_tranform),('model',RandomForestClassifier())])
+my_pipeline.fit(X_train,y_train)
+
+my_pipeline.fit(X_train,y_train)
+y_pred= my_pipeline.predict(X_test)
+
+from sklearn.metrics import accuracy_score
+pd.Series(accuracy_score(y_test,y_pred))
+
+from sklearn.model_selection import GridSearchCV
+from sklearn.ensemble import RandomForestClassifier
+
+# # Define Parameters
+# max_depth=[2, 8, 16]
+# n_estimators = [64, 128, 256]
+# param_grid = dict(max_depth=max_depth, n_estimators=n_estimators)
+
+# # Build the grid search
+# dfrst = RandomForestClassifier(n_estimators=n_estimators, max_depth=max_depth)
+# grid = GridSearchCV(estimator=dfrst, param_grid=param_grid, cv = 5, scoring ='accuracy')
+# grid_results = grid.fit(X_train, y_train)
+
+
+# # Summarize the results in a readable format
+# print("Best: {0}, using {1}".format(grid_results.cv_results_['accuracy'], grid_results.best_params_))
+# results_df = pd.DataFrame(grid_results.cv_results_)
+# results_df
+
+
+# rf = RandomForestClassifier()
+
+# # grid search cv
+# grid_space={'max_depth':[3,5,10,None],
+#               'n_estimators':[10,100,200],
+#               'max_features':[1,3,5,7],
+#               'min_samples_leaf':[1,2,3],
+#               'min_samples_split':[1,2,3]
+#            }
+
+# grid = GridSearchCV(rf,param_grid=grid_space,cv=3,scoring='accuracy')
+# model_grid = grid.fit(X_train,y_train)
+
+# # grid search results
+# print('Best grid search hyperparameters are: '+str(model_grid.best_params_))
+# print('Best grid search score is: '+str(model_grid.best_score_))
