@@ -121,6 +121,10 @@ sns.countplot (x=X.Department,hue=X.Attrition)
 
 sns.countplot (x=X.EducationField,hue=X.Attrition)
 
+sns.countplot (x=X.Attrition )
+
+"""Null accuracy = 1200/1400 = 85.7%"""
+
 # tried One Hot encoding with sklearn however he issue is i could not get "Column Names" for newly derived columns.
 # this causes issue for pairplots.
 
@@ -289,6 +293,232 @@ from sklearn.ensemble import RandomForestClassifier
 import sweetviz
 
 # my_report = sweetviz.compare([X, "Train"] "Attrition")
-my_report =sweetviz.analyze(source=df_org,target_feat='Attrition')
+# my_report =sweetviz.analyze(source=df_org,target_feat='Attrition')
 
-my_report.show_html("Report.html")
+# my_report.show_html("Report.html")
+
+"""** Gaussian naive bayes **
+**this is the best fit of all**
+"""
+
+# X_train,X_test,y_train,y_test 
+from sklearn.naive_bayes import GaussianNB
+GNBclf = GaussianNB()
+model = GNBclf.fit(X_train, y_train)
+y_pred = model.predict(X_test)
+
+metrics.recall_score(y_test,y_pred)
+
+metrics.precision_score(y_test,y_pred)
+
+metrics.f1_score(y_test,y_pred)
+
+metrics.confusion_matrix(y_test,y_pred)
+
+from sklearn.metrics  import confusion_matrix, ConfusionMatrixDisplay
+metrics.confusion_matrix(y_test,y_pred)
+# metrics.recall_score(y_test,y_pred)
+cm = confusion_matrix(y_test, y_pred, labels=clf.classes_)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm,
+                               display_labels=clf.classes_)
+disp.plot()
+
+from numpy import argmax
+from sklearn.metrics import plot_roc_curve
+roc = plot_roc_curve(model, X_test, y_test)
+
+y_pred_prob = model.predict_proba(X_test)[:,1]
+
+y_pred_prob
+
+dummies_df.columns
+
+"""Trying to identify if 'DailyRate','HourlyRate','MonthlyRate','MonthlyIncome' are co-related and any of these can be eliminated.
+Checking this since Naive bayes treats each dimension independently and would work better if they are not related.
+"""
+
+dummies_df_corr = dummies_df[['DailyRate','HourlyRate','MonthlyRate','MonthlyIncome']]
+
+correlations = dummies_df_corr.corr()
+#sns.heatmap(correlations, xticklabels=correlations.columns, yticklabels=correlations.columns, annot=True)
+sns.clustermap(correlations, xticklabels=correlations.columns, yticklabels=correlations.columns, annot=True)
+
+"""Do not find strong corelation between these columns - 'DailyRate','HourlyRate','MonthlyRate','MonthlyIncome'.
+no Pearson's correlation value is above 0.5
+Trying to eliminate corelated columns for Naive bayes.
+"""
+
+dummies_df.info()
+
+dummies_df_corr = dummies_df[['DailyRate','HourlyRate','MonthlyRate','MonthlyIncome']]
+
+from scipy.stats import pearsonr
+# calculate Pearson's correlation
+# corr, _ = pearsonr(dummies_df_corr['DailyRate'], dummies_df_corr['HourlyRate'])
+corr, _ = pearsonr(dummies_df_corr['DailyRate'], dummies_df_corr['HourlyRate'])
+print('Pearsons correlation: %.3f' % corr)
+
+param_grid_nb = {
+    'var_smoothing': np.logspace(0,-9, num=100)
+}
+
+from sklearn.naive_bayes import GaussianNB
+from sklearn.model_selection import GridSearchCV
+nbModel_grid = GridSearchCV(estimator=GaussianNB(), param_grid=param_grid_nb, verbose=1, cv=10, n_jobs=-1)
+nbModel_grid.fit(X_test, y_test)
+print(nbModel_grid.best_estimator_)
+
+y_pred = nbModel_grid.predict(X_test)
+
+from sklearn.metrics import confusion_matrix
+print(confusion_matrix(y_test, y_pred), ": is the confusion matrix")
+
+from sklearn.metrics import f1_score
+print(f1_score(y_test, y_pred), ": is the f1 score")
+
+from sklearn.metrics import recall_score
+print(recall_score(y_test, y_pred), ": is the recall score")
+
+from sklearn.metrics  import confusion_matrix, ConfusionMatrixDisplay
+metrics.confusion_matrix(y_test,y_pred)
+# metrics.recall_score(y_test,y_pred)
+cm = confusion_matrix(y_test, y_pred, labels=clf.classes_)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm,
+                               display_labels=clf.classes_)
+disp.plot()
+
+from sklearn.metrics import f1_score
+print(f1_score(y_test, y_pred), ": is the f1 score")
+
+roc = plot_roc_curve(model, X_test, y_pred)
+
+from numpy import mean
+from sklearn.datasets import make_classification
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_val_predict
+from sklearn.model_selection import RepeatedStratifiedKFold
+from imblearn.pipeline import Pipeline
+from imblearn.over_sampling import SMOTE
+
+# define pipeline
+steps = [('over', SMOTE()), ('model', GaussianNB())]
+pipeline = Pipeline(steps=steps)
+# evaluate pipeline
+cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=1)
+# scores = cross_val_score(pipeline, X_train, y_train, scoring='roc_auc', cv=cv, n_jobs=-1)
+# print('Mean ROC AUC: %.3f' % mean(scores))
+# scores = cross_val_score(pipeline, X_train, y_train, scoring='recall', cv=cv, n_jobs=-1)
+# print('Mean Recall: %.3f' % mean(scores))
+my_pipeline= Pipeline(steps=[('over', SMOTE()), ('model', GaussianNB())])
+my_pipeline.fit(X_train,y_train)
+y_pred= my_pipeline.predict(X_test)
+from sklearn.metrics import accuracy_score
+# pd.Series(accuracy_score(y_test,y_pred))
+from sklearn.metrics  import confusion_matrix, ConfusionMatrixDisplay
+metrics.confusion_matrix(y_test,y_pred)
+# metrics.recall_score(y_test,y_pred)
+cm = confusion_matrix(y_test, y_pred, labels=clf.classes_)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm,
+                               display_labels=clf.classes_)
+disp.plot()
+
+from sklearn.metrics import f1_score
+print(f1_score(y_test, y_pred), ": is the f1 score")
+
+from sklearn.metrics import recall_score
+print(recall_score(y_test, y_pred), ": is the recall score")
+
+"""Applying PCA - this is expected to give better results for Naive Bayes"""
+
+# Set the n_components=3
+from sklearn.decomposition import PCA
+
+principal=PCA(n_components=18)
+principal.fit(dummies_df)
+Principal_components =principal.transform(dummies_df)
+
+df_pca = pd.DataFrame(data = Principal_components, columns = ['PC 1', 'PC 2', 'PC 3','PC 4','PC 5','PC 6','PC 7', 'PC 8', 'PC 9', 'PC 10','PC 11','PC 12','PC 13','PC 14', 'PC 15','PC 16','PC 17','PC 18' ])
+
+# Check the dimensions of data after PCA
+print(df_pca.shape)
+
+# check how much variance is explained by each principal component
+print(principal.explained_variance_ratio_)
+
+plt.plot(principal.explained_variance_ratio_.cumsum(), marker='p', color ='r', ls ='--')
+
+df_pca
+
+import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
+
+PC_values = np.arange(principal.n_components_) + 1
+plt.plot(PC_values, principal.explained_variance_ratio_, 'ro-', linewidth=2)
+plt.title('Scree Plot')
+plt.xlabel('Principal Component')
+plt.ylabel('Proportion of Variance Explained')
+plt.show()
+
+X_train,X_test,y_train,y_test = train_test_split(df_pca,y,test_size=.25)
+
+param_grid_nb = {
+    'var_smoothing': np.logspace(0,-9, num=100)
+}
+
+from sklearn.naive_bayes import GaussianNB
+from sklearn.model_selection import GridSearchCV
+nbModel_grid = GridSearchCV(estimator=GaussianNB(), param_grid=param_grid_nb, verbose=1, cv=10, n_jobs=-1)
+nbModel_grid.fit(X_train, y_train)
+print(nbModel_grid.best_estimator_)
+
+y_pred = nbModel_grid.predict(X_test)
+
+from sklearn.naive_bayes import GaussianNB
+GNBclf = GaussianNB()
+model = GNBclf.fit(X_train, y_train)
+y_pred = model.predict(X_test)
+
+y_pred
+
+from sklearn.metrics import confusion_matrix
+print(confusion_matrix(y_test, y_pred), ": is the confusion matrix")
+
+from sklearn.metrics import f1_score
+print(f1_score(y_test, y_pred), ": is the f1 score")
+
+from sklearn.metrics import recall_score
+print(recall_score(y_test, y_pred), ": is the recall score")
+
+from numpy import mean
+from sklearn.datasets import make_classification
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_val_predict
+from sklearn.model_selection import RepeatedStratifiedKFold
+from imblearn.pipeline import Pipeline
+from imblearn.over_sampling import SMOTE
+
+# define pipeline
+steps = [('over', SMOTE()), ('model', GaussianNB())]
+pipeline = Pipeline(steps=steps)
+# evaluate pipeline
+cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=1)
+# scores = cross_val_score(pipeline, X_train, y_train, scoring='roc_auc', cv=cv, n_jobs=-1)
+# print('Mean ROC AUC: %.3f' % mean(scores))
+# scores = cross_val_score(pipeline, X_train, y_train, scoring='recall', cv=cv, n_jobs=-1)
+# print('Mean Recall: %.3f' % mean(scores))
+my_pipeline= Pipeline(steps=[('over', SMOTE()), ('model', GaussianNB())])
+my_pipeline.fit(X_train,y_train)
+y_pred= my_pipeline.predict(X_test)
+from sklearn.metrics import accuracy_score
+# pd.Series(accuracy_score(y_test,y_pred))
+from sklearn.metrics  import confusion_matrix, ConfusionMatrixDisplay
+metrics.confusion_matrix(y_test,y_pred)
+# metrics.recall_score(y_test,y_pred)
+cm = confusion_matrix(y_test, y_pred, labels=clf.classes_)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm,
+                               display_labels=clf.classes_)
+disp.plot()
+
+from sklearn.metrics import f1_score
+print(f1_score(y_test, y_pred), ": is the f1 score")
